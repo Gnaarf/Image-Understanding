@@ -26,6 +26,7 @@ namespace Test
         {
             message = "";
 
+            // generate test set
             Dictionary<char, int> letterCountBindings = new Dictionary<char, int>();
             letterCountBindings['K'] = 9;
             letterCountBindings['L'] = 3;
@@ -43,11 +44,14 @@ namespace Test
                 }
             }
 
+            // initialize FoldOrganizer
             int foldCount = 3;
             int validationFoldCount = 1;
             
             FoldOrganizer<TagName, char> foldOrganizer = new FoldOrganizer<TagName, char>(tagNames, foldCount, validationFoldCount);
 
+
+            // run test cases
             int targetSampleCount = 0;
             foreach (KeyValuePair<char, int> letterCountBinding in letterCountBindings)
             {
