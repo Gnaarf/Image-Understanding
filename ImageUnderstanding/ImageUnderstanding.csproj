@@ -61,12 +61,14 @@
     <Reference Include="Emgu.CV.UI.GL">
       <HintPath>..\..\..\..\..\..\Emgu\emgucv-windesktop 3.4.1.2976\bin\Emgu.CV.UI.GL.dll</HintPath>
     </Reference>
-    <Reference Include="Emgu.CV.World">
-      <HintPath>..\..\..\..\..\..\Emgu\emgucv-windesktop 3.4.1.2976\bin\Emgu.CV.World.dll</HintPath>
+    <Reference Include="Emgu.CV.World, Version=3.4.1.2976, Culture=neutral, PublicKeyToken=7281126722ab4438, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\..\..\..\..\Emgu\emgucv-windesktop 3.4.1.2976\bin\Emgu.CV.World.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
     <Reference Include="System.Drawing" />
+    <Reference Include="System.Drawing.Primitives, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -75,8 +77,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Code\FoldOrganizer\FoldOrganizer.cs" />
-    <Compile Include="Code\FoldOrganizer\Taggable.cs" />
+    <Compile Include="Code\Classifier\Classifier.cs" />
+    <Compile Include="Code\Classifier\RandomClassifier.cs" />
+    <Compile Include="Code\DataSet\FoldOrganizer\FoldOrganizer.cs" />
+    <Compile Include="Code\DataSet\Image.cs" />
+    <Compile Include="Code\DataSet\Taggable.cs" />
+    <Compile Include="Code\DataSet\TaggedImage.cs" />
+    <Compile Include="Code\Extensions\MatExtensions.cs" />
     <Compile Include="Code\Program.cs" />
     <Compile Include="Code\Test\Test.cs" />
     <Compile Include="Code\Test\FoldOrganizer_Test.cs" />

@@ -1,5 +1,5 @@
 ﻿
-namespace DataSet
+namespace ImageUnderstanding
 {
     public interface Taggable<T>
     {

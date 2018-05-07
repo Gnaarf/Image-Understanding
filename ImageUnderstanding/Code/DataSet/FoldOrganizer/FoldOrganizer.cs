@@ -1,7 +1,6 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 
-namespace DataSet
+namespace ImageUnderstanding.DataSet
 {
     public class FoldOrganizer<Datatype, TagDatatype> where Datatype : Taggable<TagDatatype>
     {
