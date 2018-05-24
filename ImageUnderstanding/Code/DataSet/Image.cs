@@ -13,7 +13,7 @@ namespace ImageUnderstanding
             this._path = path;
         }
 
-        public Mat GetPixels()
+        public Mat GetMat()
         {
             return CvInvoke.Imread(_path, ImreadModes.Grayscale);
         }
