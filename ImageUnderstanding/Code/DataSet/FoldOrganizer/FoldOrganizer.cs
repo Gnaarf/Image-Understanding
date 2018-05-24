@@ -112,6 +112,19 @@ namespace ImageUnderstanding.DataSet
             return learningData;
         }
 
-    }
+        public int GetValidationDataCount(TagDatatype tag, int iteration = 0)
+        {
+            return Data[tag].Count * ValidationFoldCount / FoldCount;
+        }
 
+        public int GetLearningDataCount(TagDatatype tag, int iteration = 0)
+        {
+            return Data[tag].Count * LearningFoldCount / FoldCount;
+        }
+
+        public int GetTotalDataCount(TagDatatype tag)
+        {
+            return Data[tag].Count;
+        }
+    }
 }

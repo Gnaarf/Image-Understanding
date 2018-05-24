@@ -7,6 +7,8 @@ namespace ImageUnderstanding.Classifier
     {
         List<TagDatatype> tags = new List<TagDatatype>();
 
+        static Random rand = new Random();
+
         public override void Train(List<Datatype> trainingDataSet)
         {
             HashSet<TagDatatype> hashSet = new HashSet<TagDatatype>();
@@ -20,13 +22,12 @@ namespace ImageUnderstanding.Classifier
             }
 
             tags = new List<TagDatatype>(hashSet);
-            
+
             return;
         }
 
         public override TagDatatype Evaluate(Datatype dataSample)
         {
-            Random rand = new Random();
             return tags[rand.Next(0, tags.Count)];
         }
     }
