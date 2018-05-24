@@ -79,6 +79,8 @@
   <ItemGroup>
     <Compile Include="Code\Classifier\Classifier.cs" />
     <Compile Include="Code\Classifier\RandomClassifier.cs" />
+    <Compile Include="Code\Classifier\SiftClassifier.cs" />
+    <Compile Include="Code\Classifier\SingleResultClassifier.cs" />
     <Compile Include="Code\DataSet\FoldOrganizer\FoldOrganizer.cs" />
     <Compile Include="Code\DataSet\Image.cs" />
     <Compile Include="Code\DataSet\Taggable.cs" />

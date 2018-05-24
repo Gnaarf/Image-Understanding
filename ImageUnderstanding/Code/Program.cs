@@ -43,7 +43,7 @@ namespace ImageUnderstanding
             // TODO: fill in all images into FoldOragnizer
             FoldOrganizer<TaggedImage, string> foldOrganizer = new FoldOrganizer<TaggedImage, string>(images, foldCount, validationFoldCount);
             
-            Mat confusionMatrix = new Mat(tagIndices.Count, tagIndices.Count, DepthType.Cv8U, 1); //Create a 3 channel image of 400x200
+            Mat confusionMatrix = new Mat(tagIndices.Count, tagIndices.Count, DepthType.Cv32F, 1); //Create a 3 channel image of 400x200
 
             for(int iteration = 0; iteration < foldCount; ++iteration)
             {
@@ -57,7 +57,7 @@ namespace ImageUnderstanding
                 //          Spectral Features
 
                 // TODO: train classifier
-                Classifier.Classifier<TaggedImage, string> classifier = new Classifier.RandomClassifier<TaggedImage, string>();
+                Classifier.Classifier<TaggedImage, string> classifier = new Classifier.SiftClassifier();
 
                 classifier.Train(foldOrganizer.GetLearningData(iteration));
 
@@ -66,28 +66,35 @@ namespace ImageUnderstanding
 
                 foreach (TaggedImage validationDataSample in validationSet)
                 {
-                    string tag = classifier.Evaluate(validationDataSample);
+                    string evaluatedTag = classifier.Evaluate(validationDataSample);
 
                     int indexOfRealTag = tagIndices[validationDataSample.Tag];
-                    int indexOfEvaluatedTag = tagIndices[tag];
+                    int indexOfEvaluatedTag = tagIndices[evaluatedTag];
 
-                    byte value = confusionMatrix.GetValue(indexOfRealTag, indexOfEvaluatedTag);
-                    value++;
-                    confusionMatrix.SetValue(indexOfRealTag, indexOfEvaluatedTag, value); 
+                    float value = confusionMatrix.GetValue(indexOfRealTag, indexOfEvaluatedTag);
+                    value += 1F / (float)foldOrganizer.GetTotalDataCount(validationDataSample.Tag);
+
+                    confusionMatrix.SetValue(indexOfRealTag, indexOfEvaluatedTag, value);
                 }
             }
 
-
+            for(int x = 0; x < tagIndices.Count; ++x)
+            {
+                for(int y = 0; y < tagIndices.Count; ++y)
+                {
+                    confusionMatrix.SetValue(x, y, (float)Math.Sqrt(Math.Sqrt(confusionMatrix.GetValue(x, y))));
+                }
+            }
 
             // TODO: visualize accuracy
             {
 
-                String win1 = "Confusion Matrix"; //The name of the window
-                CvInvoke.NamedWindow(win1); //Create the window using the specific name
-                
-                CvInvoke.Imshow(win1, confusionMatrix); //Show the image
-                CvInvoke.WaitKey(0);  //Wait for the key pressing event
-                CvInvoke.DestroyWindow(win1); //Destroy the window if key is pressed
+                //String win1 = "Confusion Matrix"; //The name of the window
+                //CvInvoke.NamedWindow(win1); //Create the window using the specific name
+
+                //CvInvoke.Imshow(win1, confusionMatrix); //Show the image
+                //CvInvoke.WaitKey(0);  //Wait for the key pressing event
+                //CvInvoke.DestroyWindow(win1); //Destroy the window if key is pressed
             }
         }
     }
