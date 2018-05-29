@@ -1,4 +1,5 @@
-﻿
+﻿using Emgu.CV;
+
 namespace ImageUnderstanding
 {
     public class TaggedImage : Image, Taggable<string>
