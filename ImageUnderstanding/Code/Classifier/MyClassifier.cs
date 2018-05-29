@@ -24,19 +24,19 @@ namespace ImageUnderstanding.Classifier
 
                 Emgu.CV.Util.VectorOfKeyPoint vectorOfKeypoints = new Emgu.CV.Util.VectorOfKeyPoint();
 
-                Mat output = image.GetMat().Clone();
+                Mat output = new Mat();
 
                 sift.DetectAndCompute(image.GetMat(), null, vectorOfKeypoints, output, false);
 
-                Features2DToolbox.DrawKeypoints(image.GetMat(), vectorOfKeypoints, output, new Bgr(0, 0, 0));
-
+                // show keypoints on image
+                Features2DToolbox.DrawKeypoints(image.GetMat(), vectorOfKeypoints, output, new Bgr(0, 255, 0), Features2DToolbox.KeypointDrawType.DrawRichKeypoints);
 
                 String win1 = "SIFT"; //The name of the window
                 CvInvoke.NamedWindow(win1); //Create the window using the specific name
 
                 CvInvoke.Imshow(win1, output); //Show the image
                 CvInvoke.WaitKey(0);  //Wait for the key pressing event
-                CvInvoke.DestroyWindow(win1); //Destroy the window if key is pressed
+                CvInvoke.DestroyWindow(win1); //Destroy the window if key is pressed                
             }
 
             return;
