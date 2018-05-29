@@ -19,7 +19,7 @@ namespace ImageUnderstanding
         static void Main(string[] args)
         {
             // some parameters
-            string path = "C:/Users/Flori/Documents/OVGU/Image Understanding/caltech_101/";
+            string path = MachineDepententConstants.caltech101Path;
             int foldCount = 10;
             int validationFoldCount = 1;
 
