@@ -7,11 +7,11 @@ using Emgu.CV.XFeatures2D;
 
 namespace ImageUnderstanding.Classifier
 {
-    public class SiftClassifier : Classifier<TaggedImage, string>
+    public class MyClassifier : Classifier<TaggedImage, string>
     {
         SIFT sift;
 
-        public SiftClassifier()
+        public MyClassifier()
         {
             sift = new SIFT();
         }

@@ -57,7 +57,7 @@ namespace ImageUnderstanding
                 //          Spectral Features
 
                 // TODO: train classifier
-                Classifier.Classifier<TaggedImage, string> classifier = new Classifier.SiftClassifier();
+                Classifier.Classifier<TaggedImage, string> classifier = new Classifier.MyClassifier();
 
                 classifier.Train(foldOrganizer.GetLearningData(iteration));
 
