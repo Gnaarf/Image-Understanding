@@ -4,46 +4,96 @@ using Emgu.CV;
 using Emgu.CV.Features2D;
 using Emgu.CV.Structure;
 using Emgu.CV.XFeatures2D;
+using Emgu.CV.ML;
+using Emgu.CV.Util;
 
 namespace ImageUnderstanding.Classifier
 {
     public class MyClassifier : Classifier<TaggedImage, string>
     {
         SIFT sift;
+        int _siftKeyPointCount;
 
-        public MyClassifier()
+        KNearest kNearest;
+
+        public MyClassifier(int siftKeypointCount = 20)
         {
             sift = new SIFT();
+            _siftKeyPointCount = siftKeypointCount;
+
+            kNearest = new KNearest();
+
         }
+
+        string consoleFeedBackString = "";
 
         public override void Train(List<TaggedImage> trainingDataSet)
         {
-            foreach (TaggedImage image in trainingDataSet)
-            {
-                List<float> featureVector = ExtractSiftFeatureVector(image, 20, SiftSorting.Response, true);
+            float[,] featureVectors = new float[trainingDataSet.Count, 5 * _siftKeyPointCount];
+            int[,] labels = new int[trainingDataSet.Count, 1];
 
+            for (int i = 0; i < trainingDataSet.Count; ++i)
+            {
+                TaggedImage image = trainingDataSet[i];
+
+                if (consoleFeedBackString != image.Tag)
+                {
+                    consoleFeedBackString = image.Tag;
+                    Console.WriteLine("processing: " + consoleFeedBackString);
+                }
+
+                List<float> featureVector = ExtractSiftFeatureVector(image, _siftKeyPointCount, SiftSortingMethod.Response, false);
+
+                for (int j = 0; j < featureVector.Count; ++j)
+                {
+                    featureVectors[i, j] = featureVector[j];
+                }
+
+                labels[i, 0] = image.TagIndex;
             }
+
+            Matrix<float> featureVectorsMatrix = new Matrix<float>(featureVectors);
+            Matrix<int> labelsMatrix = new Matrix<int>(labels);
+
+            TrainData td = new TrainData(featureVectorsMatrix, Emgu.CV.ML.MlEnum.DataLayoutType.RowSample, labelsMatrix);
+
+            kNearest.Train(td);
+
+            consoleFeedBackString = "";
 
             return;
         }
 
         public override string Evaluate(TaggedImage dataSample)
         {
-            throw new NotImplementedException();
+            float[,] featureVector2D = new float[1, 5 * _siftKeyPointCount];
+
+            List<float> featureVector = ExtractSiftFeatureVector(dataSample, _siftKeyPointCount, SiftSortingMethod.Response, false);
+
+            for (int j = 0; j < featureVector.Count; ++j)
+            {
+                featureVector2D[0, j] = featureVector[j];
+            }
+            
+            Matrix<float> featureVectorMatrix = new Matrix<float>(featureVector2D);
+
+            string res= TaggedImage.GetStringFromIndex((int)kNearest.Predict(featureVectorMatrix));
+            
+            return res;
         }
 
-        enum SiftSorting
+        enum SiftSortingMethod
         {
             Response,
             Size,
             None,
         }
 
-        List<float> ExtractSiftFeatureVector(TaggedImage image, int keyPointCount, SiftSorting sorting, bool doDrawEverySingleImage)
+        List<float> ExtractSiftFeatureVector(TaggedImage image, int keyPointCount, SiftSortingMethod sorting1ethod, bool doDrawEverySingleImage)
         {
             // use the emgu functions to gather keypoints
 
-            Emgu.CV.Util.VectorOfKeyPoint vectorOfKeypoints = new Emgu.CV.Util.VectorOfKeyPoint();
+            VectorOfKeyPoint vectorOfKeypoints = new VectorOfKeyPoint();
 
             Mat output = image.GetMat().Clone(); // only needed for drawing
 
@@ -55,46 +105,40 @@ namespace ImageUnderstanding.Classifier
 
             // sort
 
-            switch (sorting)
+            switch (sorting1ethod)
             {
-                case SiftSorting.Response:
+                case SiftSortingMethod.Response:
                     keyPoints.Sort((p1, p2) => p1.Response < p2.Response ? 1 : (p1.Response == p2.Response ? 0 : -1));
                     break;
 
-                case SiftSorting.Size:
+                case SiftSortingMethod.Size:
                     keyPoints.Sort((p1, p2) => p1.Size < p2.Size ? 1 : (p1.Size == p2.Size ? 0 : -1));
                     break;
 
-                case SiftSorting.None:
+                case SiftSortingMethod.None:
                 default:
                     break;
             }
 
-            // trim
+            // expand/trim
 
-            keyPoints.RemoveRange(keyPointCount, keyPoints.Count - keyPointCount);
-
-            // convert into list
-
-            List<float> result = new List<float>(keyPointCount * 4);
-            for (int i = 0; i < keyPointCount; ++i)
+            while (keyPoints.Count < keyPointCount)
             {
-                MKeyPoint current = keyPoints[i];
+                keyPoints.Add(new MKeyPoint());
+            }
 
-                result.Add(current.Point.X);
-                result.Add(current.Point.Y);
-                result.Add(current.Size);
-                result.Add(current.Angle);
+            if (keyPoints.Count > keyPointCount)
+            {
+                keyPoints.RemoveRange(keyPointCount, keyPoints.Count - keyPointCount);
             }
 
             // visualize
 
             if (doDrawEverySingleImage)
             {
-                vectorOfKeypoints = new Emgu.CV.Util.VectorOfKeyPoint(keyPoints.ToArray());
+                vectorOfKeypoints = new VectorOfKeyPoint(keyPoints.ToArray());
 
                 Features2DToolbox.DrawKeypoints(image.GetMat(), vectorOfKeypoints, output, new Bgr(0, 0, 255), Features2DToolbox.KeypointDrawType.DrawRichKeypoints);
-
 
                 String win1 = "SIFT"; //The name of the window
                 CvInvoke.NamedWindow(win1); //Create the window using the specific name
@@ -102,6 +146,21 @@ namespace ImageUnderstanding.Classifier
                 CvInvoke.Imshow(win1, output); //Show the image
                 CvInvoke.WaitKey(0);  //Wait for the key pressing event
                 CvInvoke.DestroyWindow(win1); //Destroy the window if key is pressed
+            }
+
+            // convert to list
+
+            List<float> result = new List<float>(5 * keyPointCount);
+
+            for (int i = 0; i < keyPoints.Count; ++i)
+            {
+                MKeyPoint current = keyPoints[i];
+
+                result.Add(current.Point.X);
+                result.Add(current.Point.Y);
+                result.Add(current.Size);
+                result.Add(current.Angle);
+                result.Add(current.Response);
             }
 
             return result;
