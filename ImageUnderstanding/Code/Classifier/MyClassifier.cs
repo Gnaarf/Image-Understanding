@@ -16,13 +16,12 @@ namespace ImageUnderstanding.Classifier
 
         KNearest kNearest;
 
-        public MyClassifier(int siftKeypointCount = 20)
+        public MyClassifier(int siftKeypointCount = 100)
         {
             sift = new SIFT();
             _siftKeyPointCount = siftKeypointCount;
 
             kNearest = new KNearest();
-
         }
 
         string consoleFeedBackString = "";
@@ -89,7 +88,7 @@ namespace ImageUnderstanding.Classifier
             None,
         }
 
-        List<float> ExtractSiftFeatureVector(TaggedImage image, int keyPointCount, SiftSortingMethod sorting1ethod, bool doDrawEverySingleImage)
+        List<float> ExtractSiftFeatureVector(TaggedImage image, int keyPointCount, SiftSortingMethod sorting1ethod, bool doDrawImage)
         {
             // use the emgu functions to gather keypoints
 
@@ -134,7 +133,7 @@ namespace ImageUnderstanding.Classifier
 
             // visualize
 
-            if (doDrawEverySingleImage)
+            if (doDrawImage)
             {
                 vectorOfKeypoints = new VectorOfKeyPoint(keyPoints.ToArray());
 
@@ -164,6 +163,12 @@ namespace ImageUnderstanding.Classifier
             }
 
             return result;
+        }
+
+        public void Dispose()
+        {
+            kNearest.Dispose();
+            sift.Dispose();
         }
     }
 }

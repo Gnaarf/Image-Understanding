@@ -7,15 +7,15 @@ namespace ImageUnderstanding.DataSet
 
         Dictionary<TagDatatype, List<Datatype>> Data;
         public int FoldCount { get; private set; }
-        public int ValidationFoldCount { get; private set; }
-        public int LearningFoldCount { get { return FoldCount - ValidationFoldCount; } }
+        public int TestFoldCount { get; private set; }
+        public int TrainingFoldCount { get { return FoldCount - TestFoldCount; } }
 
         public int TotalDataSampleCount { get; private set; }
 
-        public FoldOrganizer(List<Datatype> data, int foldCount, int validationFoldCount)
+        public FoldOrganizer(List<Datatype> data, int foldCount, int testFoldCount)
         {
             // remember some important meta data
-            ChangeFoldCount(foldCount, validationFoldCount);
+            ChangeFoldCount(foldCount, testFoldCount);
 
             // fill into own dataformat
             Data = new Dictionary<TagDatatype, List<Datatype>>();
@@ -43,59 +43,59 @@ namespace ImageUnderstanding.DataSet
             {
                 if(Data[tagType].Count < FoldCount)
                 {
-                    throw new System.Exception("Sample Size too small. Only " + Data[tagType].Count + " instances of <" + tagType + ">. Can't perform " + FoldCount + "-fold validation.");
+                    throw new System.Exception("Sample Size too small. Only " + Data[tagType].Count + " instances of <" + tagType + ">. Can't perform " + FoldCount + "-fold test.");
                 }
             }
         }
 
-        public void ChangeFoldCount(int foldCount, int validationFoldCount)
+        public void ChangeFoldCount(int foldCount, int testFoldCount)
         {
             FoldCount = foldCount;
-            ValidationFoldCount = validationFoldCount;
+            TestFoldCount = testFoldCount;
         }
 
-        public List<Datatype> GetValidationData(int iteration)
+        public List<Datatype> GetTestData(int iteration)
         {
             if (iteration >= FoldCount)
             {
                 throw new System.IndexOutOfRangeException("Can't get the " + iteration + "th iteration on a " + FoldCount + "-fold Data Set");
             }
 
-            int estimatedValdationDataCount = (int)(ValidationFoldCount / (float)FoldCount) * TotalDataSampleCount;
-            List<Datatype> validationData = new List<Datatype>(estimatedValdationDataCount);
+            int estimatedValdationDataCount = (int)(TestFoldCount / (float)FoldCount) * TotalDataSampleCount;
+            List<Datatype> testData = new List<Datatype>(estimatedValdationDataCount);
 
             foreach (List<Datatype> samplesWithSingleTag in Data.Values)
             {
                 int foldSize = samplesWithSingleTag.Count / FoldCount;
 
                 int startIndex = iteration * foldSize;
-                int aboveEndIndex = ((iteration + ValidationFoldCount) >= FoldCount) ? samplesWithSingleTag.Count : (iteration + ValidationFoldCount) * foldSize;
+                int aboveEndIndex = ((iteration + TestFoldCount) >= FoldCount) ? samplesWithSingleTag.Count : (iteration + TestFoldCount) * foldSize;
 
                 for (int i = startIndex; i < aboveEndIndex; ++i)
                 {
-                    validationData.Add(samplesWithSingleTag[i]);
+                    testData.Add(samplesWithSingleTag[i]);
                 }
             }
 
-            return validationData;
+            return testData;
         }
 
-        public List<Datatype> GetLearningData(int iteration)
+        public List<Datatype> GetTrainingData(int iteration)
         {
             if (iteration >= FoldCount)
             {
                 throw new System.IndexOutOfRangeException("Can't get the " + iteration + "th iteration on a " + FoldCount + "-fold Data Set");
             }
 
-            int estimatedLearningDataCount = (int)(ValidationFoldCount / (float)FoldCount) * TotalDataSampleCount;
-            List<Datatype> learningData = new List<Datatype>(estimatedLearningDataCount);
+            int estimatedTrainingDataCount = (int)(TestFoldCount / (float)FoldCount) * TotalDataSampleCount;
+            List<Datatype> trainingData = new List<Datatype>(estimatedTrainingDataCount);
             
             foreach (List<Datatype> samplesWithSingleTag in Data.Values)
             {
                 int foldSize = samplesWithSingleTag.Count / FoldCount;
 
                 int skipStartIndex = iteration * foldSize;
-                int skipAboveEndIndex = ((iteration + ValidationFoldCount) >= FoldCount) ? samplesWithSingleTag.Count : (iteration + ValidationFoldCount) * foldSize;
+                int skipAboveEndIndex = ((iteration + TestFoldCount) >= FoldCount) ? samplesWithSingleTag.Count : (iteration + TestFoldCount) * foldSize;
 
                 for (int i = 0; i < samplesWithSingleTag.Count; ++i)
                 {
@@ -105,21 +105,21 @@ namespace ImageUnderstanding.DataSet
                         continue;
                     }
 
-                    learningData.Add(samplesWithSingleTag[i]);
+                    trainingData.Add(samplesWithSingleTag[i]);
                 }
             }
 
-            return learningData;
+            return trainingData;
         }
 
-        public int GetValidationDataCount(TagDatatype tag, int iteration = 0)
+        public int GetTestDataCount(TagDatatype tag, int iteration = 0)
         {
-            return Data[tag].Count * ValidationFoldCount / FoldCount;
+            return Data[tag].Count * TestFoldCount / FoldCount;
         }
 
-        public int GetLearningDataCount(TagDatatype tag, int iteration = 0)
+        public int GetTrainingDataCount(TagDatatype tag, int iteration = 0)
         {
-            return Data[tag].Count * LearningFoldCount / FoldCount;
+            return Data[tag].Count * TrainingFoldCount / FoldCount;
         }
 
         public int GetTotalDataCount(TagDatatype tag)

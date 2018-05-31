@@ -46,9 +46,9 @@ namespace Test
 
             // initialize FoldOrganizer
             int foldCount = 3;
-            int validationFoldCount = 1;
+            int testFoldCount = 1;
             
-            FoldOrganizer<TagName, char> foldOrganizer = new FoldOrganizer<TagName, char>(tagNames, foldCount, validationFoldCount);
+            FoldOrganizer<TagName, char> foldOrganizer = new FoldOrganizer<TagName, char>(tagNames, foldCount, testFoldCount);
 
 
             // run test cases
@@ -67,45 +67,25 @@ namespace Test
 
             for (int iteration = 0; iteration < foldCount; ++iteration)
             {
-                List<TagName> learningData = foldOrganizer.GetLearningData(iteration);
-                List<TagName> validationData = foldOrganizer.GetValidationData(iteration);
+                List<TagName> trainingData = foldOrganizer.GetTrainingData(iteration);
+                List<TagName> testData = foldOrganizer.GetTestData(iteration);
 
                 foreach (TagName tagName in tagNames)
                 {
-                    if (!(learningData.Contains(tagName) ^ validationData.Contains(tagName)))
+                    if (!(trainingData.Contains(tagName) ^ testData.Contains(tagName)))
                     {
-                        if (learningData.Contains(tagName) && validationData.Contains(tagName))
+                        if (trainingData.Contains(tagName) && testData.Contains(tagName))
                         {
-                            message = tagName.Name + " is contained in learning Set AND in validation Set.";
+                            message = tagName.Name + " is contained in training Set AND in test Set.";
                         }
                         else
                         {
-                            message = tagName.Name + " is contained NEITHER in learning Set NOR in validation Set.";
+                            message = tagName.Name + " is contained NEITHER in training Set NOR in test Set.";
                         }
 
                         return false;
                     }
                 }
-                /*
-                foreach(KeyValuePair<char, int> letterCountBinding in letterCountBindings)
-                {
-                    int minLearningSize = letterCountBinding.Value / foldOrganizer.FoldCount * foldOrganizer.LearningFoldCount;
-                    int minValidationSize = letterCountBinding.Value / foldOrganizer.FoldCount * foldOrganizer.ValidationFoldCount;
-
-                    if (learningData.FindAll(item => item.Tag == letterCountBinding.Key).Count < minLearningSize)
-                    {
-                        message = "Learning Data Set contains only " + learningData.FindAll(item => item.Tag == letterCountBinding.Key).Count + ". Should at least contain " + minLearningSize;
-
-                        return false;
-                    }
-
-                    if (validationData.FindAll(item => item.Tag == letterCountBinding.Key).Count < minValidationSize)
-                    {
-                        message = "Validation Data Set contains only " + validationData.FindAll(item => item.Tag == letterCountBinding.Key).Count + ". Should at least contain " + minValidationSize;
-
-                        return false;
-                    }
-                }*/
             }
 
             return true;

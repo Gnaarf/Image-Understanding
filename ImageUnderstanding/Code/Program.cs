@@ -21,9 +21,10 @@ namespace ImageUnderstanding
             // some parameters
             string path = MachineDepententConstants.caltech101Path;
             int foldCount = 10;
-            int validationFoldCount = 1;
+            int testFoldCount = 1;
 
-            List<string> restrictTo = new List<string>() { "camera", "cannon", "brontosaurus", "ibis", "inline_skate" };
+            List<string> restrictTo = new List<string>();// { "camera", "cannon", "brontosaurus", "ibis", "inline_skate" };
+            List<string> ignoreTags = new List<string>() { "BACKGROUND_Google" };
 
             // get all images
             List<TaggedImage> images = new List<TaggedImage>();
@@ -35,12 +36,13 @@ namespace ImageUnderstanding
                 {
                     TaggedImage image = new TaggedImage(imagePath);
 
-                    if (restrictTo.Count != 0 && !restrictTo.Contains(image.Tag))
+                    if (ignoreTags.Contains(image.Tag) || (restrictTo.Count != 0 && !restrictTo.Contains(image.Tag)))
                     {
                         continue;
                     }
 
                     images.Add(image);
+
                     if (!tagIndices.ContainsKey(image.Tag))
                     {
                         tagIndices.Add(image.Tag, tagIndices.Count);
@@ -50,7 +52,7 @@ namespace ImageUnderstanding
             }
 
             // fill in all images into FoldOragnizer
-            FoldOrganizer<TaggedImage, string> foldOrganizer = new FoldOrganizer<TaggedImage, string>(images, foldCount, validationFoldCount);
+            FoldOrganizer<TaggedImage, string> foldOrganizer = new FoldOrganizer<TaggedImage, string>(images, foldCount, testFoldCount);
             
             Mat confusionMatrix = new Mat(tagIndices.Count, tagIndices.Count, DepthType.Cv32F, 1); //Create a 3 channel image of 400x200
 
@@ -63,38 +65,41 @@ namespace ImageUnderstanding
 
                 Classifier.Classifier<TaggedImage, string> classifier = new Classifier.MyClassifier();
 
-                classifier.Train(foldOrganizer.GetLearningData(iteration));
+                classifier.Train(foldOrganizer.GetTrainingData(iteration));
 
-                // evaluate Validation set
+                // evaluate Test set
                 Console.WriteLine("start testing");
 
-                List<TaggedImage> validationSet = foldOrganizer.GetValidationData(iteration);
+                List<TaggedImage> testSet = foldOrganizer.GetTestData(iteration);
 
-                foreach (TaggedImage validationDataSample in validationSet)
+                foreach (TaggedImage testDataSample in testSet)
                 {
-                    string evaluatedTag = classifier.Evaluate(validationDataSample);
+                    string evaluatedTag = classifier.Evaluate(testDataSample);
 
-                    int indexOfRealTag = tagIndices[validationDataSample.Tag];
+                    int indexOfRealTag = tagIndices[testDataSample.Tag];
                     int indexOfEvaluatedTag = tagIndices[evaluatedTag];
 
                     float value = confusionMatrix.GetValue(indexOfRealTag, indexOfEvaluatedTag);
-                    value += 1F / (float)foldOrganizer.GetTotalDataCount(validationDataSample.Tag);
+                    value += 1F / (float)foldOrganizer.GetTotalDataCount(testDataSample.Tag);
 
                     confusionMatrix.SetValue(indexOfRealTag, indexOfEvaluatedTag, value);
+                }
+
+                if (classifier is Classifier.MyClassifier)
+                    (classifier as Classifier.MyClassifier).Dispose();
+                
+                foreach (KeyValuePair<string, int> tagIndexPair in tagIndices)
+                {
+                    float accuracy = confusionMatrix.GetValue(tagIndexPair.Value, tagIndexPair.Value);
+                    Console.WriteLine("accuracy = " + accuracy + ",\t " + tagIndexPair.Key);
                 }
             }
 
             float totalAccuracy = 0F;
-
             foreach(KeyValuePair<string, int> tagIndexPair in tagIndices)
             {
-                float accuracy = confusionMatrix.GetValue(tagIndexPair.Value, tagIndexPair.Value);
-
-                Console.WriteLine(tagIndexPair.Key + " accuracy = " + accuracy);
-
-                totalAccuracy += accuracy / tagIndices.Count;
+                totalAccuracy += confusionMatrix.GetValue(tagIndexPair.Value, tagIndexPair.Value) / tagIndices.Count;
             }
-
             Console.WriteLine("total accuracy = " + totalAccuracy);
 
 
