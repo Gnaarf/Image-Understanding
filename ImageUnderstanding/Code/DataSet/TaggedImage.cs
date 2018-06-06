@@ -2,19 +2,23 @@
 
 namespace ImageUnderstanding
 {
-    public class TaggedImage : Image, Taggable<string>
+    public class T : Image, Taggable<string>, FeatureHolder<float>
     {
         public string Tag => _tag;
         string _tag;
 
         public int TagIndex { get; private set; }
 
+        public List<float> FeatureVector { get; set; }
+
         static List<string> intToStringLookUp = new List<string>();
         static Dictionary<string, int> stringToIntLookUp = new Dictionary<string, int>();
 
-        public TaggedImage(string path)
+        public T(string path)
             : base(path)
         {
+            FeatureVector = new List<float>();
+
             _tag = GetTagFromPath(_path);
 
             if(!stringToIntLookUp.ContainsKey(_tag))

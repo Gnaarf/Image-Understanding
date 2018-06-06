@@ -9,45 +9,34 @@ using Emgu.CV.Util;
 
 namespace ImageUnderstanding.Classifier
 {
-    public class MyClassifier : Classifier<TaggedImage, string>
+    public class MyClassifier : Classifier<T, string, float>
     {
-        SIFT sift;
-        int _siftKeyPointCount;
-
         KNearest kNearest;
 
-        public MyClassifier(int siftKeypointCount = 100)
+        public MyClassifier()
         {
-            sift = new SIFT();
-            _siftKeyPointCount = siftKeypointCount;
-
             kNearest = new KNearest();
         }
 
-        string consoleFeedBackString = "";
-
-        public override void Train(List<TaggedImage> trainingDataSet)
+        public override void Train(List<T> trainingDataSet)
         {
-            float[,] featureVectors = new float[trainingDataSet.Count, 5 * _siftKeyPointCount];
+            if(trainingDataSet.Count == 0)
+            {
+                throw new Exception("trainingDataSet is empty");
+            }
+
+            float[,] featureVectors = new float[trainingDataSet.Count, trainingDataSet[0].FeatureVector.Count];
             int[,] labels = new int[trainingDataSet.Count, 1];
 
             for (int i = 0; i < trainingDataSet.Count; ++i)
             {
-                TaggedImage image = trainingDataSet[i];
-
-                if (consoleFeedBackString != image.Tag)
+                T image = trainingDataSet[i];
+                
+                for (int j = 0; j < image.FeatureVector.Count; ++j)
                 {
-                    consoleFeedBackString = image.Tag;
-                    Console.WriteLine("processing: " + consoleFeedBackString);
+                    featureVectors[i, j] = image.FeatureVector[j];
                 }
-
-                List<float> featureVector = ExtractSiftFeatureVector(image, _siftKeyPointCount, SiftSortingMethod.Response, false);
-
-                for (int j = 0; j < featureVector.Count; ++j)
-                {
-                    featureVectors[i, j] = featureVector[j];
-                }
-
+                
                 labels[i, 0] = image.TagIndex;
             }
 
@@ -58,16 +47,14 @@ namespace ImageUnderstanding.Classifier
 
             kNearest.Train(td);
 
-            consoleFeedBackString = "";
-
             return;
         }
 
-        public override string Evaluate(TaggedImage dataSample)
+        public override string Evaluate(T dataSample)
         {
-            float[,] featureVector2D = new float[1, 5 * _siftKeyPointCount];
+            float[,] featureVector2D = new float[1, dataSample.FeatureVector.Count];
 
-            List<float> featureVector = ExtractSiftFeatureVector(dataSample, _siftKeyPointCount, SiftSortingMethod.Response, false);
+            List<float> featureVector = dataSample.FeatureVector;
 
             for (int j = 0; j < featureVector.Count; ++j)
             {
@@ -76,99 +63,14 @@ namespace ImageUnderstanding.Classifier
             
             Matrix<float> featureVectorMatrix = new Matrix<float>(featureVector2D);
 
-            string res= TaggedImage.GetStringFromIndex((int)kNearest.Predict(featureVectorMatrix));
+            string res = T.GetStringFromIndex((int)kNearest.Predict(featureVectorMatrix));
             
             return res;
         }
-
-        enum SiftSortingMethod
-        {
-            Response,
-            Size,
-            None,
-        }
-
-        List<float> ExtractSiftFeatureVector(TaggedImage image, int keyPointCount, SiftSortingMethod sorting1ethod, bool doDrawImage)
-        {
-            // use the emgu functions to gather keypoints
-
-            VectorOfKeyPoint vectorOfKeypoints = new VectorOfKeyPoint();
-
-            Mat output = image.GetMat().Clone(); // only needed for drawing
-
-            sift.DetectAndCompute(image.GetMat(), null, vectorOfKeypoints, output, false);
-
-            // put it into useful data formats
-
-            List<MKeyPoint> keyPoints = new List<MKeyPoint>(vectorOfKeypoints.ToArray());
-
-            // sort
-
-            switch (sorting1ethod)
-            {
-                case SiftSortingMethod.Response:
-                    keyPoints.Sort((p1, p2) => p1.Response < p2.Response ? 1 : (p1.Response == p2.Response ? 0 : -1));
-                    break;
-
-                case SiftSortingMethod.Size:
-                    keyPoints.Sort((p1, p2) => p1.Size < p2.Size ? 1 : (p1.Size == p2.Size ? 0 : -1));
-                    break;
-
-                case SiftSortingMethod.None:
-                default:
-                    break;
-            }
-
-            // expand/trim
-
-            while (keyPoints.Count < keyPointCount)
-            {
-                keyPoints.Add(new MKeyPoint());
-            }
-
-            if (keyPoints.Count > keyPointCount)
-            {
-                keyPoints.RemoveRange(keyPointCount, keyPoints.Count - keyPointCount);
-            }
-
-            // visualize
-
-            if (doDrawImage)
-            {
-                vectorOfKeypoints = new VectorOfKeyPoint(keyPoints.ToArray());
-
-                Features2DToolbox.DrawKeypoints(image.GetMat(), vectorOfKeypoints, output, new Bgr(0, 0, 255), Features2DToolbox.KeypointDrawType.DrawRichKeypoints);
-
-                String win1 = "SIFT"; //The name of the window
-                CvInvoke.NamedWindow(win1); //Create the window using the specific name
-
-                CvInvoke.Imshow(win1, output); //Show the image
-                CvInvoke.WaitKey(0);  //Wait for the key pressing event
-                CvInvoke.DestroyWindow(win1); //Destroy the window if key is pressed
-            }
-
-            // convert to list
-
-            List<float> result = new List<float>(5 * keyPointCount);
-
-            for (int i = 0; i < keyPoints.Count; ++i)
-            {
-                MKeyPoint current = keyPoints[i];
-
-                result.Add(current.Point.X);
-                result.Add(current.Point.Y);
-                result.Add(current.Size);
-                result.Add(current.Angle);
-                result.Add(current.Response);
-            }
-
-            return result;
-        }
-
-        public void Dispose()
+        
+        public override void Dispose()
         {
             kNearest.Dispose();
-            sift.Dispose();
         }
     }
 }

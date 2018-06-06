@@ -11,6 +11,11 @@ using Emgu.CV.Structure;
 
 using ImageUnderstanding;
 using ImageUnderstanding.DataSet;
+using System.Runtime.Serialization.Json;
+using System.Xml.Linq;
+using System.Xml.XPath;
+using System.IO;
+using ImageUnderstanding.FeatureGenerator;
 
 namespace ImageUnderstanding
 {
@@ -18,23 +23,41 @@ namespace ImageUnderstanding
     {
         static void Main(string[] args)
         {
+            // For that you will need to add reference to System.Runtime.Serialization
+            var jsonReader = JsonReaderWriterFactory.CreateJsonReader(Encoding.UTF8.GetBytes(@"{ ""Name"": ""Jon Smith"", ""Address"": { ""City"": ""New York"", ""State"": ""NY"" }, ""Age"": 42 }"), new System.Xml.XmlDictionaryReaderQuotas());
+
+            // For that you will need to add reference to System.Xml and System.Xml.Linq
+            var root = XElement.Load(jsonReader);
+            Console.WriteLine(root.XPathSelectElement("//Name").Value);
+            Console.WriteLine(root.XPathSelectElement("//Address/State").Value);
+
+            File.Create("..\\netcoreapp2.0\\hello.txt");
+
+            //// For that you will need to add reference to System.Web.Helpers
+            //dynamic json = System.Web.Helpers.Json.Decode(@"{ ""Name"": ""Jon Smith"", ""Address"": { ""City"": ""New York"", ""State"": ""NY"" }, ""Age"": 42 }");
+            //Console.WriteLine(json.Name);
+            //Console.WriteLine(json.Address.State);
+
+            //string name = stuff.Name;
+            //string address = stuff.Address.City;
+
             // some parameters
             string path = MachineDepententConstants.caltech101Path;
             int foldCount = 10;
             int testFoldCount = 1;
 
-            List<string> restrictTo = new List<string>();// { "camera", "cannon", "brontosaurus", "ibis", "inline_skate" };
+            List<string> restrictTo = new List<string>() { "camera", "cannon", "brontosaurus", "ibis", "inline_skate" };
             List<string> ignoreTags = new List<string>() { "BACKGROUND_Google" };
 
             // get all images
-            List<TaggedImage> images = new List<TaggedImage>();
+            List<T> images = new List<T>();
             Dictionary<string, int> tagIndices = new Dictionary<string, int>();
             
-            foreach (string folderPath in System.IO.Directory.GetDirectories(path))
+            foreach (string folderPath in Directory.GetDirectories(path))
             {
-                foreach (string imagePath in System.IO.Directory.GetFiles(folderPath))
+                foreach (string imagePath in Directory.GetFiles(folderPath))
                 {
-                    TaggedImage image = new TaggedImage(imagePath);
+                    T image = new T(imagePath);
 
                     if (ignoreTags.Contains(image.Tag) || (restrictTo.Count != 0 && !restrictTo.Contains(image.Tag)))
                     {
@@ -51,28 +74,47 @@ namespace ImageUnderstanding
                 }
             }
 
-            // fill in all images into FoldOragnizer
-            FoldOrganizer<TaggedImage, string> foldOrganizer = new FoldOrganizer<TaggedImage, string>(images, foldCount, testFoldCount);
+            // Generate Feature Vector for every image
+
+            Console.WriteLine("starting feature vector generation");
+
+            MyFeatureGenerator featureGenerator = new MyFeatureGenerator(100, SiftSortingMethod.Response);
+
+            string tag = "";
+            foreach(T image in images)
+            {
+                if(tag != image.Tag)
+                {
+                    Console.WriteLine("generating feature vector: [" + image.Tag + "]");
+                    tag = image.Tag;
+                }
+                image.FeatureVector = featureGenerator.GetFeatureVector(image);
+            }
+
+            featureGenerator.Dispose();
+
+            // fill all images into FoldOragnizer
+            FoldOrganizer<T, string> foldOrganizer = new FoldOrganizer<T, string>(images, foldCount, testFoldCount);
             
             Mat confusionMatrix = new Mat(tagIndices.Count, tagIndices.Count, DepthType.Cv32F, 1); //Create a 3 channel image of 400x200
 
             for(int iteration = 0; iteration < foldCount; ++iteration)
             {
-                Console.WriteLine("current iteration: " + iteration);
+                Console.WriteLine("\ncurrent iteration: " + iteration);
 
                 // train classifier
-                Console.WriteLine("start training");
+                Console.WriteLine("train classifier (" + iteration + ")");
 
-                Classifier.Classifier<TaggedImage, string> classifier = new Classifier.MyClassifier();
+                Classifier.Classifier<T, string, float> classifier = new Classifier.MyClassifier();
 
                 classifier.Train(foldOrganizer.GetTrainingData(iteration));
 
                 // evaluate Test set
-                Console.WriteLine("start testing");
+                Console.WriteLine("testing (" + iteration + ")");
 
-                List<TaggedImage> testSet = foldOrganizer.GetTestData(iteration);
+                List<T> testSet = foldOrganizer.GetTestData(iteration);
 
-                foreach (TaggedImage testDataSample in testSet)
+                foreach (T testDataSample in testSet)
                 {
                     string evaluatedTag = classifier.Evaluate(testDataSample);
 
@@ -85,8 +127,7 @@ namespace ImageUnderstanding
                     confusionMatrix.SetValue(indexOfRealTag, indexOfEvaluatedTag, value);
                 }
 
-                if (classifier is Classifier.MyClassifier)
-                    (classifier as Classifier.MyClassifier).Dispose();
+                classifier.Dispose();
                 
                 foreach (KeyValuePair<string, int> tagIndexPair in tagIndices)
                 {

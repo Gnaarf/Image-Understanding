@@ -3,17 +3,17 @@ using System.Collections.Generic;
 
 namespace ImageUnderstanding.Classifier
 {
-    public class RandomClassifier<Datatype, TagDatatype> : Classifier<Datatype, TagDatatype> where Datatype : Taggable<TagDatatype>
+    public class RandomClassifier<T, TagT, FeatureT> : Classifier<T, TagT, FeatureT> where T : Taggable<TagT>, FeatureHolder<FeatureT>
     {
-        List<TagDatatype> tags = new List<TagDatatype>();
+        List<TagT> tags = new List<TagT>();
 
         static Random rand = new Random();
 
-        public override void Train(List<Datatype> trainingDataSet)
+        public override void Train(List<T> trainingDataSet)
         {
-            HashSet<TagDatatype> hashSet = new HashSet<TagDatatype>();
+            HashSet<TagT> hashSet = new HashSet<TagT>();
 
-            foreach(Datatype dataSample in trainingDataSet)
+            foreach(T dataSample in trainingDataSet)
             {
                 if(!hashSet.Contains(dataSample.Tag))
                 {
@@ -21,14 +21,20 @@ namespace ImageUnderstanding.Classifier
                 }
             }
 
-            tags = new List<TagDatatype>(hashSet);
+            tags = new List<TagT>(hashSet);
 
             return;
         }
 
-        public override TagDatatype Evaluate(Datatype dataSample)
+        public override TagT Evaluate(T dataSample)
         {
             return tags[rand.Next(0, tags.Count)];
+        }
+
+        public override void Dispose()
+        {
+            // nothing to dispose of
+            return;
         }
     }
 }

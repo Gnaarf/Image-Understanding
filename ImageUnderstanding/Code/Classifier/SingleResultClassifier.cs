@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace ImageUnderstanding.Classifier
 {
-    public class SingleResultClassifier<Datatype, TagDatatype> : Classifier<Datatype, TagDatatype> where Datatype : Taggable<TagDatatype>
+    public class SingleResultClassifier<Datatype, TagDatatype, FeatureT> : Classifier<Datatype, TagDatatype, FeatureT> where Datatype : Taggable<TagDatatype>, FeatureHolder<FeatureT>
     {
         TagDatatype _resultTag;
 
@@ -20,6 +20,12 @@ namespace ImageUnderstanding.Classifier
         public override TagDatatype Evaluate(Datatype dataSample)
         {
             return _resultTag;
+        }
+
+        public override void Dispose()
+        {
+            // nothing to dispose of
+            return;
         }
     }
 }
