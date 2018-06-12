@@ -9,11 +9,11 @@ using Emgu.CV.Util;
 
 namespace ImageUnderstanding.Classifier
 {
-    public class MyClassifier : Classifier<TaggedImage, string, float>
+    public class KNearestClassifier : Classifier<TaggedImage, string, float>
     {
         KNearest kNearest;
 
-        public MyClassifier()
+        public KNearestClassifier()
         {
             kNearest = new KNearest();
         }
