@@ -50,14 +50,14 @@ namespace ImageUnderstanding
             List<string> ignoreTags = new List<string>() { "BACKGROUND_Google" };
 
             // get all images
-            List<T> images = new List<T>();
+            List<TaggedImage> images = new List<TaggedImage>();
             Dictionary<string, int> tagIndices = new Dictionary<string, int>();
-            
+
             foreach (string folderPath in Directory.GetDirectories(path))
             {
                 foreach (string imagePath in Directory.GetFiles(folderPath))
                 {
-                    T image = new T(imagePath);
+                    TaggedImage image = new TaggedImage(imagePath);
 
                     if (ignoreTags.Contains(image.Tag) || (restrictTo.Count != 0 && !restrictTo.Contains(image.Tag)))
                     {
@@ -78,12 +78,12 @@ namespace ImageUnderstanding
 
             Console.WriteLine("starting feature vector generation");
 
-            MyFeatureGenerator featureGenerator = new MyFeatureGenerator(100, SiftSortingMethod.Response);
+            FeatureGenerator<TaggedImage, float> featureGenerator = new MyFeatureGenerator();
 
             string tag = "";
-            foreach(T image in images)
+            foreach (TaggedImage image in images)
             {
-                if(tag != image.Tag)
+                if (tag != image.Tag)
                 {
                     Console.WriteLine("generating feature vector: [" + image.Tag + "]");
                     tag = image.Tag;
@@ -94,27 +94,28 @@ namespace ImageUnderstanding
             featureGenerator.Dispose();
 
             // fill all images into FoldOragnizer
-            FoldOrganizer<T, string> foldOrganizer = new FoldOrganizer<T, string>(images, foldCount, testFoldCount);
-            
+            FoldOrganizer<TaggedImage, string> foldOrganizer = new FoldOrganizer<TaggedImage, string>(images, foldCount, testFoldCount);
+
             Mat confusionMatrix = new Mat(tagIndices.Count, tagIndices.Count, DepthType.Cv32F, 1); //Create a 3 channel image of 400x200
 
-            for(int iteration = 0; iteration < foldCount; ++iteration)
+            for (int iteration = 0; iteration < foldCount; ++iteration)
             {
                 Console.WriteLine("\ncurrent iteration: " + iteration);
 
                 // train classifier
                 Console.WriteLine("train classifier (" + iteration + ")");
 
-                Classifier.Classifier<T, string, float> classifier = new Classifier.MyClassifier();
+                //Classifier.Classifier<TaggedImage, string, float> classifier = new Classifier.MyClassifier();
+                Classifier.Classifier<TaggedImage, string, float> classifier = new Classifier.SingleResultClassifier<TaggedImage, string, float>("cannon");
 
                 classifier.Train(foldOrganizer.GetTrainingData(iteration));
 
                 // evaluate Test set
                 Console.WriteLine("testing (" + iteration + ")");
 
-                List<T> testSet = foldOrganizer.GetTestData(iteration);
+                List<TaggedImage> testSet = foldOrganizer.GetTestData(iteration);
 
-                foreach (T testDataSample in testSet)
+                foreach (TaggedImage testDataSample in testSet)
                 {
                     string evaluatedTag = classifier.Evaluate(testDataSample);
 
@@ -128,7 +129,7 @@ namespace ImageUnderstanding
                 }
 
                 classifier.Dispose();
-                
+
                 foreach (KeyValuePair<string, int> tagIndexPair in tagIndices)
                 {
                     float accuracy = confusionMatrix.GetValue(tagIndexPair.Value, tagIndexPair.Value);
@@ -137,7 +138,7 @@ namespace ImageUnderstanding
             }
 
             float totalAccuracy = 0F;
-            foreach(KeyValuePair<string, int> tagIndexPair in tagIndices)
+            foreach (KeyValuePair<string, int> tagIndexPair in tagIndices)
             {
                 totalAccuracy += confusionMatrix.GetValue(tagIndexPair.Value, tagIndexPair.Value) / tagIndices.Count;
             }
@@ -146,7 +147,7 @@ namespace ImageUnderstanding
 
             for (int x = 0; x < tagIndices.Count; ++x)
             {
-                for(int y = 0; y < tagIndices.Count; ++y)
+                for (int y = 0; y < tagIndices.Count; ++y)
                 {
                     confusionMatrix.SetValue(x, y, (float)Math.Sqrt(Math.Sqrt(confusionMatrix.GetValue(x, y))));
                 }
@@ -162,6 +163,11 @@ namespace ImageUnderstanding
                 CvInvoke.WaitKey(0);  //Wait for the key pressing event
                 CvInvoke.DestroyWindow(win1); //Destroy the window if key is pressed
             }
+
+            string s;
+            Test.Test t = new Test.FoldOrganizer_Test();
+            t.PerformTest(out s);
+            Console.WriteLine(s);
         }
     }
 }

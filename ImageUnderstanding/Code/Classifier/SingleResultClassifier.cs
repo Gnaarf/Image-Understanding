@@ -3,21 +3,21 @@ using System.Collections.Generic;
 
 namespace ImageUnderstanding.Classifier
 {
-    public class SingleResultClassifier<Datatype, TagDatatype, FeatureT> : Classifier<Datatype, TagDatatype, FeatureT> where Datatype : Taggable<TagDatatype>, FeatureHolder<FeatureT>
+    public class SingleResultClassifier<T, TagT, FeatureT> : Classifier<T, TagT, FeatureT> where T : Taggable<TagT>, FeatureHolder<FeatureT>
     {
-        TagDatatype _resultTag;
+        TagT _resultTag;
 
-        public SingleResultClassifier(TagDatatype resultTag)
+        public SingleResultClassifier(TagT resultTag)
         {
             _resultTag = resultTag;
         }
 
-        public override void Train(List<Datatype> trainingDataSet)
+        public override void Train(List<T> trainingDataSet)
         {
             return;
         }
 
-        public override TagDatatype Evaluate(Datatype dataSample)
+        public override TagT Evaluate(T dataSample)
         {
             return _resultTag;
         }

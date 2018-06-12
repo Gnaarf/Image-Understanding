@@ -2,7 +2,7 @@
 
 namespace ImageUnderstanding
 {
-    public class T : Image, Taggable<string>, FeatureHolder<float>
+    public class TaggedImage : Image, Taggable<string>, FeatureHolder<float>
     {
         public string Tag => _tag;
         string _tag;
@@ -14,7 +14,7 @@ namespace ImageUnderstanding
         static List<string> intToStringLookUp = new List<string>();
         static Dictionary<string, int> stringToIntLookUp = new Dictionary<string, int>();
 
-        public T(string path)
+        public TaggedImage(string path)
             : base(path)
         {
             FeatureVector = new List<float>();

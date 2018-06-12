@@ -9,7 +9,7 @@ using Emgu.CV.Util;
 
 namespace ImageUnderstanding.Classifier
 {
-    public class MyClassifier : Classifier<T, string, float>
+    public class MyClassifier : Classifier<TaggedImage, string, float>
     {
         KNearest kNearest;
 
@@ -18,7 +18,7 @@ namespace ImageUnderstanding.Classifier
             kNearest = new KNearest();
         }
 
-        public override void Train(List<T> trainingDataSet)
+        public override void Train(List<TaggedImage> trainingDataSet)
         {
             if(trainingDataSet.Count == 0)
             {
@@ -30,7 +30,7 @@ namespace ImageUnderstanding.Classifier
 
             for (int i = 0; i < trainingDataSet.Count; ++i)
             {
-                T image = trainingDataSet[i];
+                TaggedImage image = trainingDataSet[i];
                 
                 for (int j = 0; j < image.FeatureVector.Count; ++j)
                 {
@@ -50,7 +50,7 @@ namespace ImageUnderstanding.Classifier
             return;
         }
 
-        public override string Evaluate(T dataSample)
+        public override string Evaluate(TaggedImage dataSample)
         {
             float[,] featureVector2D = new float[1, dataSample.FeatureVector.Count];
 
@@ -63,7 +63,7 @@ namespace ImageUnderstanding.Classifier
             
             Matrix<float> featureVectorMatrix = new Matrix<float>(featureVector2D);
 
-            string res = T.GetStringFromIndex((int)kNearest.Predict(featureVectorMatrix));
+            string res = TaggedImage.GetStringFromIndex((int)kNearest.Predict(featureVectorMatrix));
             
             return res;
         }

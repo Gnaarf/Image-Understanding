@@ -2,36 +2,36 @@
 
 namespace ImageUnderstanding.DataSet
 {
-    public class FoldOrganizer<Datatype, TagDatatype> where Datatype : Taggable<TagDatatype>
+    public class FoldOrganizer<T, TagT> where T : Taggable<TagT>
     {
 
-        Dictionary<TagDatatype, List<Datatype>> Data;
+        Dictionary<TagT, List<T>> Data;
         public int FoldCount { get; private set; }
         public int TestFoldCount { get; private set; }
         public int TrainingFoldCount { get { return FoldCount - TestFoldCount; } }
 
         public int TotalDataSampleCount { get; private set; }
 
-        public FoldOrganizer(List<Datatype> data, int foldCount, int testFoldCount)
+        public FoldOrganizer(List<T> data, int foldCount, int testFoldCount)
         {
             // remember some important meta data
             ChangeFoldCount(foldCount, testFoldCount);
 
             // fill into own dataformat
-            Data = new Dictionary<TagDatatype, List<Datatype>>();
+            Data = new Dictionary<TagT, List<T>>();
 
             AddDataSamples(data.ToArray());
         }
 
-        public void AddDataSamples(params Datatype[] dataSamples)
+        public void AddDataSamples(params T[] dataSamples)
         {
-            foreach (Datatype data in dataSamples)
+            foreach (T data in dataSamples)
             {
-                TagDatatype tag = data.Tag;
+                TagT tag = data.Tag;
 
                 if (!Data.ContainsKey(tag))
                 {
-                    Data[tag] = new List<Datatype>();
+                    Data[tag] = new List<T>();
                 }
 
                 Data[tag].Add(data);
@@ -39,7 +39,7 @@ namespace ImageUnderstanding.DataSet
 
             TotalDataSampleCount += dataSamples.Length;
 
-            foreach(TagDatatype tagType in Data.Keys)
+            foreach(TagT tagType in Data.Keys)
             {
                 if(Data[tagType].Count < FoldCount)
                 {
@@ -54,7 +54,7 @@ namespace ImageUnderstanding.DataSet
             TestFoldCount = testFoldCount;
         }
 
-        public List<Datatype> GetTestData(int iteration)
+        public List<T> GetTestData(int iteration)
         {
             if (iteration >= FoldCount)
             {
@@ -62,9 +62,9 @@ namespace ImageUnderstanding.DataSet
             }
 
             int estimatedValdationDataCount = (int)(TestFoldCount / (float)FoldCount) * TotalDataSampleCount;
-            List<Datatype> testData = new List<Datatype>(estimatedValdationDataCount);
+            List<T> testData = new List<T>(estimatedValdationDataCount);
 
-            foreach (List<Datatype> samplesWithSingleTag in Data.Values)
+            foreach (List<T> samplesWithSingleTag in Data.Values)
             {
                 int foldSize = samplesWithSingleTag.Count / FoldCount;
 
@@ -80,7 +80,7 @@ namespace ImageUnderstanding.DataSet
             return testData;
         }
 
-        public List<Datatype> GetTrainingData(int iteration)
+        public List<T> GetTrainingData(int iteration)
         {
             if (iteration >= FoldCount)
             {
@@ -88,9 +88,9 @@ namespace ImageUnderstanding.DataSet
             }
 
             int estimatedTrainingDataCount = (int)(TestFoldCount / (float)FoldCount) * TotalDataSampleCount;
-            List<Datatype> trainingData = new List<Datatype>(estimatedTrainingDataCount);
+            List<T> trainingData = new List<T>(estimatedTrainingDataCount);
             
-            foreach (List<Datatype> samplesWithSingleTag in Data.Values)
+            foreach (List<T> samplesWithSingleTag in Data.Values)
             {
                 int foldSize = samplesWithSingleTag.Count / FoldCount;
 
@@ -112,17 +112,17 @@ namespace ImageUnderstanding.DataSet
             return trainingData;
         }
 
-        public int GetTestDataCount(TagDatatype tag, int iteration = 0)
+        public int GetTestDataCount(TagT tag, int iteration = 0)
         {
             return Data[tag].Count * TestFoldCount / FoldCount;
         }
 
-        public int GetTrainingDataCount(TagDatatype tag, int iteration = 0)
+        public int GetTrainingDataCount(TagT tag, int iteration = 0)
         {
             return Data[tag].Count * TrainingFoldCount / FoldCount;
         }
 
-        public int GetTotalDataCount(TagDatatype tag)
+        public int GetTotalDataCount(TagT tag)
         {
             return Data[tag].Count;
         }
