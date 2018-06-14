@@ -38,16 +38,14 @@ namespace ImageUnderstanding.FeatureGenerator
             Mat image = data.GetMat();
             
             Size cellSize = new Size(image.Cols / _cellCountX, image.Rows / _cellCountY);
-            Size blockSize = new Size(2 * cellSize.Width, 2 * cellSize.Height);
+            Size blockSize = new Size(cellSize.Width, cellSize.Height);
             Size blockStride = new Size(cellSize.Width, cellSize.Height);
             Size winSize = new Size(image.Cols - (image.Cols % cellSize.Width), image.Rows - (image.Rows % cellSize.Height));
 
             _hog = new HOGDescriptor(winSize, blockSize, blockStride, cellSize);
 
             float[] result = _hog.Compute(image);
-
-            //Console.WriteLine(data.Tag + " , " + result.Length);
-
+            
             return new List<float>(result);
         }
     }
