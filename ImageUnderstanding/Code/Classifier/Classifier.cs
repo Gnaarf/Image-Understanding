@@ -19,6 +19,9 @@ namespace ImageUnderstanding.Classifier
         /// <returns>evaluted tag of dataSample</returns>
         public abstract TagT Evaluate(T dataSample);
 
+        /// <summary>
+        /// dispose of memory leaks if need be
+        /// </summary>
         public abstract void Dispose();
     }
 }

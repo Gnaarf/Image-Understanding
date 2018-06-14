@@ -74,11 +74,12 @@ namespace ImageUnderstanding
                 }
             }
 
-            // Generate Feature Vector for every image
-
             Console.WriteLine("starting feature vector generation");
 
-            FeatureGenerator<TaggedImage, float> featureGenerator = new MyFeatureGenerator();
+            ////////////////////////////////////////////////////////////////////////////////////////////////////
+            // FEATURE GENERATOR                                                                              //
+            ////////////////////////////////////////////////////////////////////////////////////////////////////
+            FeatureGenerator<TaggedImage, float> featureGenerator = new HOGFeatureGenerator(10,10);
 
             string tag = "";
             foreach (TaggedImage image in images)
@@ -93,11 +94,17 @@ namespace ImageUnderstanding
 
             featureGenerator.Dispose();
 
-            // fill all images into FoldOragnizer
+            ////////////////////////////////////////////////////////////////////////////////////////////////////
+            // FOLD ORGANIZER                                                                                 //
+            ////////////////////////////////////////////////////////////////////////////////////////////////////
             FoldOrganizer<TaggedImage, string> foldOrganizer = new FoldOrganizer<TaggedImage, string>(images, foldCount, testFoldCount);
 
-            Mat confusionMatrix = new Mat(tagIndices.Count, tagIndices.Count, DepthType.Cv32F, 1); //Create a 3 channel image of 400x200
+            ////////////////////////////////////////////////////////////////////////////////////////////////////
+            // CONFUSION MATRIX                                                                               //
+            ////////////////////////////////////////////////////////////////////////////////////////////////////
+            Mat confusionMatrix = new Mat(tagIndices.Count, tagIndices.Count, DepthType.Cv32F, 1);
 
+            // initialize with zeros
             for (int y = 0; y < confusionMatrix.Rows; ++y)
             {
                 for (int x = 0; x < confusionMatrix.Cols; ++x)
@@ -110,10 +117,11 @@ namespace ImageUnderstanding
             {
                 Console.WriteLine("\ncurrent iteration: " + iteration);
 
-                // train classifier
                 Console.WriteLine("train classifier (" + iteration + ")");
 
-                //Classifier.Classifier<TaggedImage, string, float> classifier = new Classifier.KNearestClassifier();
+                ////////////////////////////////////////////////////////////////////////////////////////////////////
+                // CLASSIFIER                                                                                     //
+                ////////////////////////////////////////////////////////////////////////////////////////////////////
                 Classifier.Classifier<TaggedImage, string, float> classifier = new Classifier.SingleResultClassifier<TaggedImage, string, float>("cannon");
 
                 classifier.Train(foldOrganizer.GetTrainingData(iteration));
