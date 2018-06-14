@@ -105,7 +105,7 @@ namespace ImageUnderstanding
                 // train classifier
                 Console.WriteLine("train classifier (" + iteration + ")");
 
-                //Classifier.Classifier<TaggedImage, string, float> classifier = new Classifier.MyClassifier();
+                //Classifier.Classifier<TaggedImage, string, float> classifier = new Classifier.KNearestClassifier();
                 Classifier.Classifier<TaggedImage, string, float> classifier = new Classifier.SingleResultClassifier<TaggedImage, string, float>("cannon");
 
                 classifier.Train(foldOrganizer.GetTrainingData(iteration));
@@ -153,6 +153,12 @@ namespace ImageUnderstanding
                 }
             }
 
+            // perform Tests
+            string s;
+            Test.Test t = new Test.FoldOrganizer_Test();
+            t.PerformTest(out s);
+            Console.WriteLine(s);
+
             //TODO: visualize accuracy
             {
 
@@ -163,11 +169,6 @@ namespace ImageUnderstanding
                 CvInvoke.WaitKey(0);  //Wait for the key pressing event
                 CvInvoke.DestroyWindow(win1); //Destroy the window if key is pressed
             }
-
-            string s;
-            Test.Test t = new Test.FoldOrganizer_Test();
-            t.PerformTest(out s);
-            Console.WriteLine(s);
         }
     }
 }
