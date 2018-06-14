@@ -11,7 +11,6 @@ using Emgu.CV.Structure;
 
 using ImageUnderstanding;
 using ImageUnderstanding.DataSet;
-using System.Runtime.Serialization.Json;
 using System.Xml.Linq;
 using System.Xml.XPath;
 using System.IO;
@@ -23,24 +22,6 @@ namespace ImageUnderstanding
     {
         static void Main(string[] args)
         {
-            // For that you will need to add reference to System.Runtime.Serialization
-            var jsonReader = JsonReaderWriterFactory.CreateJsonReader(Encoding.UTF8.GetBytes(@"{ ""Name"": ""Jon Smith"", ""Address"": { ""City"": ""New York"", ""State"": ""NY"" }, ""Age"": 42 }"), new System.Xml.XmlDictionaryReaderQuotas());
-
-            // For that you will need to add reference to System.Xml and System.Xml.Linq
-            var root = XElement.Load(jsonReader);
-            Console.WriteLine(root.XPathSelectElement("//Name").Value);
-            Console.WriteLine(root.XPathSelectElement("//Address/State").Value);
-
-            File.Create("..\\netcoreapp2.0\\hello.txt");
-
-            //// For that you will need to add reference to System.Web.Helpers
-            //dynamic json = System.Web.Helpers.Json.Decode(@"{ ""Name"": ""Jon Smith"", ""Address"": { ""City"": ""New York"", ""State"": ""NY"" }, ""Age"": 42 }");
-            //Console.WriteLine(json.Name);
-            //Console.WriteLine(json.Address.State);
-
-            //string name = stuff.Name;
-            //string address = stuff.Address.City;
-
             // some parameters
             string path = MachineDepententConstants.caltech101Path;
             int foldCount = 10;

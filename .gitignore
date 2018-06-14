@@ -286,7 +286,4 @@ __pycache__/
 *.btm.cs
 *.odx.cs
 *.xsd.cs
-/ImageUnderstanding/Properties/AssemblyInfo.cs
-/ImageUnderstanding/ImageUnderstanding.csproj
-/ImageUnderstanding/Properties/AssemblyInfo.cs
 /ImageUnderstanding/Code/MachineDepententConstants.cs
