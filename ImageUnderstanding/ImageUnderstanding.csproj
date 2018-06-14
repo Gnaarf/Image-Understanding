@@ -82,6 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Code\Classifier\Classifier.cs" />
+    <Compile Include="Code\Classifier\SVMClassifier.cs" />
     <Compile Include="Code\Classifier\KNearestClassifier.cs" />
     <Compile Include="Code\Classifier\RandomClassifier.cs" />
     <Compile Include="Code\Classifier\SingleResultClassifier.cs" />

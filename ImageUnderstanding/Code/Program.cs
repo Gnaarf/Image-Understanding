@@ -15,7 +15,6 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using System.IO;
 using ImageUnderstanding.FeatureGenerator;
-using NewImageUnderstanding.Code;
 
 namespace ImageUnderstanding
 {
@@ -28,7 +27,7 @@ namespace ImageUnderstanding
             int foldCount = 10;
             int testFoldCount = 1;
 
-            List<string> restrictTo = new List<string>() { "camera", "cannon", "brontosaurus", "ibis", "inline_skate" };
+            List<string> restrictTo = new List<string>();// { "camera", "cannon", "brontosaurus", "ibis", "inline_skate" };
             List<string> ignoreTags = new List<string>() { "BACKGROUND_Google" };
 
             // get all images
@@ -105,7 +104,7 @@ namespace ImageUnderstanding
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
                 // CLASSIFIER                                                                                     //
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
-                Classifier.Classifier<TaggedImage, string, float> classifier = new Classifier.KNearestClassifier(8);
+                Classifier.Classifier<TaggedImage, string, float> classifier = new Classifier.KNearestClassifier();
 
                 classifier.Train(foldOrganizer.GetTrainingData(iteration));
 
@@ -164,7 +163,7 @@ namespace ImageUnderstanding
                 String win1 = "Confusion Matrix"; //The name of the window
                 CvInvoke.NamedWindow(win1); //Create the window using the specific name
 
-                int confusionMatrixScale = 12;
+                int confusionMatrixScale = 5;
 
                 Mat scaledConfusionMatrix = new Mat(confusionMatrix.Cols * confusionMatrixScale, confusionMatrix.Rows * confusionMatrixScale, confusionMatrix.Depth, confusionMatrix.NumberOfChannels);
 
