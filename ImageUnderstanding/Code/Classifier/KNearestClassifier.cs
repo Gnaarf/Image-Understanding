@@ -18,6 +18,12 @@ namespace ImageUnderstanding.Classifier
             kNearest = new KNearest();
         }
 
+        public KNearestClassifier(int k)
+            : this()
+        {
+            kNearest.DefaultK = k;
+        }
+
         public override void Train(List<TaggedImage> trainingDataSet)
         {
             if(trainingDataSet.Count == 0)

@@ -61,7 +61,8 @@ namespace ImageUnderstanding
             ////////////////////////////////////////////////////////////////////////////////////////////////////
             // FEATURE GENERATOR                                                                              //
             ////////////////////////////////////////////////////////////////////////////////////////////////////
-            FeatureGenerator<TaggedImage, float> featureGenerator = new HOGFeatureGenerator(10,10);
+
+            FeatureGenerator<TaggedImage, float> featureGenerator = new HOGFeatureGenerator(10, 10);
 
             string tag = "";
             foreach (TaggedImage image in images)
@@ -104,7 +105,7 @@ namespace ImageUnderstanding
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
                 // CLASSIFIER                                                                                     //
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
-                Classifier.Classifier<TaggedImage, string, float> classifier = new Classifier.SingleResultClassifier<TaggedImage, string, float>("cannon");
+                Classifier.Classifier<TaggedImage, string, float> classifier = new Classifier.KNearestClassifier(8);
 
                 classifier.Train(foldOrganizer.GetTrainingData(iteration));
 
@@ -163,7 +164,19 @@ namespace ImageUnderstanding
                 String win1 = "Confusion Matrix"; //The name of the window
                 CvInvoke.NamedWindow(win1); //Create the window using the specific name
 
-                CvInvoke.Imshow(win1, confusionMatrix); //Show the image
+                int confusionMatrixScale = 12;
+
+                Mat scaledConfusionMatrix = new Mat(confusionMatrix.Cols * confusionMatrixScale, confusionMatrix.Rows * confusionMatrixScale, confusionMatrix.Depth, confusionMatrix.NumberOfChannels);
+
+                for(int y = 0; y < scaledConfusionMatrix.Rows; ++y)
+                {
+                    for(int x = 0; x < scaledConfusionMatrix.Cols; ++x)
+                    {
+                        scaledConfusionMatrix.SetValue(x, y, (float)confusionMatrix.GetValue(x / confusionMatrixScale, y / confusionMatrixScale));
+                    }
+                }
+
+                CvInvoke.Imshow(win1, scaledConfusionMatrix); //Show the image
                 CvInvoke.WaitKey(0);  //Wait for the key pressing event
                 CvInvoke.DestroyWindow(win1); //Destroy the window if key is pressed
             }
