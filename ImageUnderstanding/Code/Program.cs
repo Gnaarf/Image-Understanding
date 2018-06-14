@@ -98,6 +98,14 @@ namespace ImageUnderstanding
 
             Mat confusionMatrix = new Mat(tagIndices.Count, tagIndices.Count, DepthType.Cv32F, 1); //Create a 3 channel image of 400x200
 
+            for (int y = 0; y < confusionMatrix.Rows; ++y)
+            {
+                for (int x = 0; x < confusionMatrix.Cols; ++x)
+                {
+                    confusionMatrix.SetValue(x, y, 0F);
+                }
+            }
+
             for (int iteration = 0; iteration < foldCount; ++iteration)
             {
                 Console.WriteLine("\ncurrent iteration: " + iteration);
