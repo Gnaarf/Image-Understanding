@@ -15,6 +15,7 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using System.IO;
 using ImageUnderstanding.FeatureGenerator;
+using NewImageUnderstanding.Code;
 
 namespace ImageUnderstanding
 {
@@ -23,7 +24,7 @@ namespace ImageUnderstanding
         static void Main(string[] args)
         {
             // some parameters
-            string path = MachineDepententConstants.caltech101Path;
+            string path = MachineDependentConstants.caltech101Path;
             int foldCount = 10;
             int testFoldCount = 1;
 

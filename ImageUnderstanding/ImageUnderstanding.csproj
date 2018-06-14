@@ -97,7 +97,7 @@
     <Compile Include="Code\FeatureGenerator\RandomFeatureGenerator.cs" />
     <Compile Include="Code\FeatureGenerator\SIFTFeatureGenerator.cs" />
     <Compile Include="Code\FeatureGenerator\UnityFeatureGenerator.cs" />
-    <Compile Include="Code\MachineDepententConstants.cs" />
+    <Compile Include="Code\MachineDependentConstants.cs" />
     <Compile Include="Code\Program.cs" />
     <Compile Include="Code\Test\FoldOrganizer_Test.cs" />
     <Compile Include="Code\Test\Test.cs" />
