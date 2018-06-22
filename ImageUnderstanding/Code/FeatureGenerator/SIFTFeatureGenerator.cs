@@ -9,7 +9,13 @@ using System.Text;
 
 namespace ImageUnderstanding.FeatureGenerator
 {
-
+    [System.Serializable]
+    public class SIFTFeatureGeneratorInitializationData
+    {
+        public int siftKeyPointCount;
+        public SiftSortingMethod sortingMethod;
+    }
+    
     public enum SiftSortingMethod
     {
         Response,
@@ -23,11 +29,15 @@ namespace ImageUnderstanding.FeatureGenerator
         SiftSortingMethod _sortingMethod;
         SIFT sift;
 
-        public SIFTFeatureGenerator(int siftKeyPointCount, SiftSortingMethod sortingMethod)
+        public SIFTFeatureGenerator()
         {
             sift = new SIFT();
-            _siftKeyPointCount = siftKeyPointCount;
-            _sortingMethod = sortingMethod;
+        }
+
+        public override void InitializeViaConfig(ImageUnderstandingConfig config)
+        {
+            _siftKeyPointCount = config.SIFTInitializationData.siftKeyPointCount;
+            _sortingMethod = config.SIFTInitializationData.sortingMethod;
         }
 
         public override void Dispose()

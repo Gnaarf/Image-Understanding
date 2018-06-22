@@ -9,18 +9,41 @@ using Emgu.CV.Util;
 
 namespace ImageUnderstanding.Classifier
 {
+    [Serializable]
+    public class SVMClassifierInitializationData
+    {
+        public SVM.SvmType svmType = SVM.SvmType.CSvc;
+        public SVM.SvmKernelType kernelType = SVM.SvmKernelType.Rbf;
+        public double c = 1;
+        public double coef0 = 1;
+        public double degree = 1;
+        public double gamma = 0.1;
+        public double nu = 1;
+        public double p = 1;
+    }
+
     public class SVMClassifier : Classifier<TaggedImage, string, float>
     {
         SVM _svm;
 
         public SVMClassifier()
         {
-            //SVMSGD s = new SVMSGD();
-            
             _svm = new SVM();
-            _svm.SetKernel(SVM.SvmKernelType.Rbf);
         }
-        
+
+        public override void InitializeViaConfig(ImageUnderstandingConfig config)
+        {
+            _svm.C = config.svmInitializationData.c;
+            _svm.Coef0 = config.svmInitializationData.coef0;
+            _svm.Degree = config.svmInitializationData.degree;
+            _svm.Gamma = config.svmInitializationData.gamma;
+            _svm.Nu = config.svmInitializationData.nu;
+            _svm.P = config.svmInitializationData.p;
+            _svm.SetKernel(config.svmInitializationData.kernelType);
+            _svm.Type = config.svmInitializationData.svmType;
+            Console.WriteLine("c = " + _svm.C + ", gamma = " + _svm.Gamma);
+        }
+
         public override void Train(List<TaggedImage> trainingDataSet)
         {
             if(trainingDataSet.Count == 0)

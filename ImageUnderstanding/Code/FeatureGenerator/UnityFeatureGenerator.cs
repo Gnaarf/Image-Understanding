@@ -9,17 +9,32 @@ using System.Text;
 
 namespace ImageUnderstanding.FeatureGenerator
 {
+    [Serializable]
+    public class UnityFeatureGeneratorInitializationData
+    {
+        public int featureCount = 50;
+    }
+
     public class UnityFeatureGenerator : FeatureGenerator<TaggedImage, float>
     {
         int _featureCount;
 
         static Random rand = new Random();
 
-        public UnityFeatureGenerator(int featureCount = 50)
+        public UnityFeatureGenerator()
+            : this(new UnityFeatureGeneratorInitializationData())
+        { }
+
+        public UnityFeatureGenerator(UnityFeatureGeneratorInitializationData initializationData)
         {
-            _featureCount = featureCount;
+            _featureCount = initializationData.featureCount;
         }
-        
+
+        public override void InitializeViaConfig(ImageUnderstandingConfig config)
+        {
+            _featureCount = config.UnityInitializationData.featureCount;
+        }
+
         public override void Dispose()
         {
             // nothing to do here

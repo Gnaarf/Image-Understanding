@@ -4,8 +4,11 @@ using System.Text;
 
 namespace ImageUnderstanding.FeatureGenerator
 {
+    [Serializable]
     public abstract class FeatureGenerator<Datatype, FeatureType>
     {
+        public abstract void InitializeViaConfig(ImageUnderstandingConfig config);
+
         public abstract List<FeatureType> GetFeatureVector(Datatype data);
 
         /// <summary>

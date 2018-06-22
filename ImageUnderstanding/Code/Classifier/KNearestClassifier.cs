@@ -9,6 +9,12 @@ using Emgu.CV.Util;
 
 namespace ImageUnderstanding.Classifier
 {
+    [Serializable]
+    public class KNearestClassifierInitiaizationData
+    {
+        public int k = 7;
+    }
+
     public class KNearestClassifier : Classifier<TaggedImage, string, float>
     {
         KNearest kNearest;
@@ -18,10 +24,15 @@ namespace ImageUnderstanding.Classifier
             kNearest = new KNearest();
         }
 
-        public KNearestClassifier(int k)
+        public KNearestClassifier(KNearestClassifierInitiaizationData initiaizationData)
             : this()
         {
-            kNearest.DefaultK = k;
+            kNearest.DefaultK = initiaizationData.k;
+        }
+
+        public override void InitializeViaConfig(ImageUnderstandingConfig config)
+        {
+            kNearest.DefaultK = config.kNearestInitiaizationData.k;
         }
 
         public override void Train(List<TaggedImage> trainingDataSet)

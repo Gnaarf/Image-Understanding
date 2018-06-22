@@ -10,17 +10,33 @@ using System.Text;
 
 namespace ImageUnderstanding.FeatureGenerator
 {
+    [Serializable]
+    public class RandomFeatureGeneratorInitializationData
+    {
+        public int featureCount = 50;
+    }
+
+
     public class RandomFeatureGenerator : FeatureGenerator<TaggedImage, float>
     {
         int _featureCount;
 
         static Random rand = new Random();
 
-        public RandomFeatureGenerator(int featureCount = 50)
+        public RandomFeatureGenerator()
+            : this(new RandomFeatureGeneratorInitializationData())
+        { }
+
+        public RandomFeatureGenerator(RandomFeatureGeneratorInitializationData initialzationData)
         {
-            _featureCount = featureCount;
+            _featureCount = initialzationData.featureCount;
         }
-        
+
+        public override void InitializeViaConfig(ImageUnderstandingConfig config)
+        {
+            _featureCount = config.RandomFGInitializationData.featureCount;
+        }
+
         public override void Dispose()
         {
             // nothing to do here

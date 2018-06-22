@@ -6,6 +6,8 @@ namespace ImageUnderstanding.Classifier
 {
     public abstract class Classifier<T, TagT, FeatureT> where T : Taggable<TagT>, FeatureHolder<FeatureT>
     {
+        public abstract void InitializeViaConfig(ImageUnderstandingConfig config);
+
         /// <summary>
         /// initialize and train the classifier. 
         /// </summary>

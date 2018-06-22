@@ -11,6 +11,13 @@ using System.Text;
 
 namespace ImageUnderstanding.FeatureGenerator
 {
+    [Serializable]
+    public class HOGFeatureGeneratorInitializationData
+    {
+        public int cellCountX = 10;
+        public int cellCountY = 10;
+    }
+
     public class HOGFeatureGenerator : FeatureGenerator<TaggedImage, float>
     {
         HOGDescriptor _hog;
@@ -18,14 +25,21 @@ namespace ImageUnderstanding.FeatureGenerator
         int _cellCountY;
 
         public HOGFeatureGenerator()
-            : this(10, 10)
+            : this(new HOGFeatureGeneratorInitializationData())
         { }
 
-        public HOGFeatureGenerator(int cellCountX, int cellCountY)
+        public HOGFeatureGenerator(HOGFeatureGeneratorInitializationData initializationData)
         {
-            _cellCountX = cellCountX;
-            _cellCountY = cellCountY;
+            _cellCountX = initializationData.cellCountX;
+            _cellCountY = initializationData.cellCountY;
+
             _hog = new HOGDescriptor();
+        }
+
+        public override void InitializeViaConfig(ImageUnderstandingConfig config)
+        {
+            _cellCountX = config.HOGInitializationData.cellCountX;
+            _cellCountY = config.HOGInitializationData.cellCountY;
         }
 
         public override void Dispose()

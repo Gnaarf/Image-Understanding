@@ -1,5 +1,6 @@
 ﻿using Emgu.CV;
 using Emgu.CV.Features2D;
+using Emgu.CV.ML;
 using Emgu.CV.Structure;
 using Emgu.CV.Util;
 using Emgu.CV.XFeatures2D;
@@ -10,6 +11,13 @@ using System.Text;
 
 namespace ImageUnderstanding.FeatureGenerator
 {
+    [Serializable]
+    public class MyFeatureGeneratorInitializationData
+    {
+        public int cellCountX = 10;
+        public int cellCountY = 10;
+    }
+
     public class MyFeatureGenerator : FeatureGenerator<TaggedImage, float>
     {
         HOGDescriptor _hog;
@@ -17,14 +25,20 @@ namespace ImageUnderstanding.FeatureGenerator
         int _cellCountY;
 
         public MyFeatureGenerator()
-            : this(10, 10)
+            : this(new MyFeatureGeneratorInitializationData())
         { }
 
-        public MyFeatureGenerator(int cellCountX, int cellCountY)
+        public MyFeatureGenerator(MyFeatureGeneratorInitializationData initiailzationData)
         {
-            _cellCountX = cellCountX;
-            _cellCountY = cellCountY;
+            _cellCountX = initiailzationData.cellCountX;
+            _cellCountY = initiailzationData.cellCountY;
             _hog = new HOGDescriptor();
+        }
+
+        public override void InitializeViaConfig(ImageUnderstandingConfig config)
+        {
+            _cellCountX = config.MyInitializationData.cellCountX;
+            _cellCountX = config.MyInitializationData.cellCountY;
         }
 
         public override void Dispose()

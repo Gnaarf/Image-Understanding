@@ -81,6 +81,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Code\ImageUnderstandingConfig.cs" />
     <Compile Include="Code\Classifier\Classifier.cs" />
     <Compile Include="Code\Classifier\SVMClassifier.cs" />
     <Compile Include="Code\Classifier\KNearestClassifier.cs" />

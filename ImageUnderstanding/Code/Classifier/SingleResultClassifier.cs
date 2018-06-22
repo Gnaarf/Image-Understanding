@@ -3,21 +3,36 @@ using System.Collections.Generic;
 
 namespace ImageUnderstanding.Classifier
 {
-    public class SingleResultClassifier<T, TagT, FeatureT> : Classifier<T, TagT, FeatureT> where T : Taggable<TagT>, FeatureHolder<FeatureT>
+    [Serializable]
+    public class SingleResultClassifierInitializationData
     {
-        TagT _resultTag;
+        public string resultTag = "accordion";
+    }
 
-        public SingleResultClassifier(TagT resultTag)
+    public class SingleResultClassifier : Classifier<TaggedImage, string, float>
+    {
+        string _resultTag;
+
+        public SingleResultClassifier()
+            : this (new SingleResultClassifierInitializationData())
+        { }
+
+        public SingleResultClassifier(SingleResultClassifierInitializationData initializationData)
         {
-            _resultTag = resultTag;
+            _resultTag = initializationData.resultTag;
         }
 
-        public override void Train(List<T> trainingDataSet)
+        public override void InitializeViaConfig(ImageUnderstandingConfig config)
+        {
+            _resultTag = config.singleResultInitializationData.resultTag;
+        }
+
+        public override void Train(List<TaggedImage> trainingDataSet)
         {
             return;
         }
 
-        public override TagT Evaluate(T dataSample)
+        public override string Evaluate(TaggedImage dataSample)
         {
             return _resultTag;
         }

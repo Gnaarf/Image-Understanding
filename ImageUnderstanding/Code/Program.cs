@@ -15,20 +15,26 @@ using System.Xml.Linq;
 using System.Xml.XPath;
 using System.IO;
 using ImageUnderstanding.FeatureGenerator;
+using ImageUnderstanding.Classifier;
 
 namespace ImageUnderstanding
 {
-    class Program
+    public class Program
     {
         static void Main(string[] args)
         {
+            ImageUnderstandingConfig config = ImageUnderstandingConfig.ImportSettings();
+
+            Console.WriteLine("Feature Generation: [" + config.featureGeneratorMethod + "]");
+            Console.WriteLine("Classification:     [" + config.classifierMethod + "]\n");
+
             // some parameters
             string path = MachineDependentConstants.caltech101Path;
-            int foldCount = 10;
-            int testFoldCount = 1;
+            int foldCount = config.FoldCount;
+            int testFoldCount = config.TestFoldCount;
 
-            List<string> restrictTo = new List<string>();// { "camera", "cannon", "brontosaurus", "ibis", "inline_skate" };
-            List<string> ignoreTags = new List<string>() { "BACKGROUND_Google" };
+            string[] restrictTo = config.RestrictTo;
+            string[] ignoreTags = config.IgnoreTags;
 
             // get all images
             List<TaggedImage> images = new List<TaggedImage>();
@@ -40,7 +46,7 @@ namespace ImageUnderstanding
                 {
                     TaggedImage image = new TaggedImage(imagePath);
 
-                    if (ignoreTags.Contains(image.Tag) || (restrictTo.Count != 0 && !restrictTo.Contains(image.Tag)))
+                    if (ignoreTags.Contains(image.Tag) || (restrictTo.Length != 0 && !restrictTo.Contains(image.Tag)))
                     {
                         continue;
                     }
@@ -55,13 +61,37 @@ namespace ImageUnderstanding
                 }
             }
 
-            Console.WriteLine("starting feature vector generation");
+            Console.WriteLine("starting feature vector generation [" + config.featureGeneratorMethod + "]\n");
 
             ////////////////////////////////////////////////////////////////////////////////////////////////////
             // FEATURE GENERATOR                                                                              //
             ////////////////////////////////////////////////////////////////////////////////////////////////////
 
-            FeatureGenerator<TaggedImage, float> featureGenerator = new HOGFeatureGenerator(10, 10);
+            FeatureGenerator<TaggedImage, float> featureGenerator;
+            switch (config.featureGeneratorMethod)
+            {
+                case ImageUnderstandingConfig.FeatureGeneratorMethod.HOG:
+                    featureGenerator = new HOGFeatureGenerator();
+                    break;
+
+                case ImageUnderstandingConfig.FeatureGeneratorMethod.SIFT:
+                    featureGenerator = new SIFTFeatureGenerator();
+                    break;
+
+                case ImageUnderstandingConfig.FeatureGeneratorMethod.Random:
+                    featureGenerator = new RandomFeatureGenerator();
+                    break;
+
+                case ImageUnderstandingConfig.FeatureGeneratorMethod.Unity:
+                    featureGenerator = new UnityFeatureGenerator();
+                    break;
+
+                default:
+                    throw new Exception("Unknown Feature Generator Method");
+            }
+
+            featureGenerator.InitializeViaConfig(config);
+            
 
             string tag = "";
             foreach (TaggedImage image in images)
@@ -95,6 +125,8 @@ namespace ImageUnderstanding
                 }
             }
 
+            Console.WriteLine("\nstarting Classification. [" + config.classifierMethod + "]");
+
             for (int iteration = 0; iteration < foldCount; ++iteration)
             {
                 Console.WriteLine("\ncurrent iteration: " + iteration);
@@ -104,7 +136,31 @@ namespace ImageUnderstanding
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
                 // CLASSIFIER                                                                                     //
                 ////////////////////////////////////////////////////////////////////////////////////////////////////
-                Classifier.Classifier<TaggedImage, string, float> classifier = new Classifier.KNearestClassifier();
+                Classifier.Classifier<TaggedImage, string, float> classifier;
+                
+                switch(config.classifierMethod)
+                {
+                    case ImageUnderstandingConfig.ClassifierMethod.KNearest:
+                        classifier = new KNearestClassifier();
+                        break;
+
+                    case ImageUnderstandingConfig.ClassifierMethod.Random:
+                        classifier = new RandomClassifier<TaggedImage, string, float>();
+                        break;
+
+                    case ImageUnderstandingConfig.ClassifierMethod.SingleResult:
+                        classifier = new SingleResultClassifier();
+                        break;
+
+                    case ImageUnderstandingConfig.ClassifierMethod.SVM:
+                        classifier = new SVMClassifier();
+                        break;
+
+                    default:
+                        throw new Exception("Unknown Classifier Method");
+
+                }
+                classifier.InitializeViaConfig(config);
 
                 classifier.Train(foldOrganizer.GetTrainingData(iteration));
 
@@ -131,7 +187,8 @@ namespace ImageUnderstanding
                 foreach (KeyValuePair<string, int> tagIndexPair in tagIndices)
                 {
                     float accuracy = confusionMatrix.GetValue(tagIndexPair.Value, tagIndexPair.Value);
-                    Console.WriteLine("accuracy = " + accuracy + ",\t " + tagIndexPair.Key);
+                    Console.WriteLine("accuracy = " + string.Format("{0,12:#.0000}%", (accuracy* 100)) + ",\t " + tagIndexPair.Key);
+                    //Console.WriteLine("accuracy = " + accuracy + ",\t " + tagIndexPair.Key);
                 }
             }
 
@@ -140,7 +197,7 @@ namespace ImageUnderstanding
             {
                 totalAccuracy += confusionMatrix.GetValue(tagIndexPair.Value, tagIndexPair.Value) / tagIndices.Count;
             }
-            Console.WriteLine("total accuracy = " + totalAccuracy);
+            Console.WriteLine("total accuracy = " + string.Format("{0,12:#.0000}%", (totalAccuracy * 100)));
 
 
             for (int x = 0; x < tagIndices.Count; ++x)
