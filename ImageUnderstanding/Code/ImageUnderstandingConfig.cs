@@ -13,11 +13,14 @@ namespace ImageUnderstanding
 
     public class ImageUnderstandingConfig
     {
+        public string path = "C:\\Users\\JinxPliskin\\Desktop\\Projects\\SelectedTopicsInImageUnderstanding\\caltech101\\";
         public int FoldCount = 10;  // default value, usually will be overwritten by the values from the config file
         public int TestFoldCount = 1; // default value, see above
 
         public string[] RestrictTo = new string[] { "camera", "cannon", "brontosaurus", "ibis", "inline_skate" }; // default value, see above
         public string[] IgnoreTags = new string[] { "BACKGROUND_Google" }; // default value, see above
+
+        public bool UseSoftNormalization = false;
 
         public enum FeatureGeneratorMethod
         {
@@ -77,8 +80,5 @@ namespace ImageUnderstanding
 
             return config;
         }
-
-
-
     }
 }
