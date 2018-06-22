@@ -106,6 +106,8 @@ namespace ImageUnderstanding
 
             featureGenerator.Dispose();
 
+            SoftNormalizeFeatureVectors(images);
+
             ////////////////////////////////////////////////////////////////////////////////////////////////////
             // FOLD ORGANIZER                                                                                 //
             ////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -214,9 +216,8 @@ namespace ImageUnderstanding
             t.PerformTest(out s);
             Console.WriteLine(s);
 
-            //TODO: visualize accuracy
+            //visualize accuracy
             {
-
                 String win1 = "Confusion Matrix"; //The name of the window
                 CvInvoke.NamedWindow(win1); //Create the window using the specific name
 
@@ -235,6 +236,27 @@ namespace ImageUnderstanding
                 CvInvoke.Imshow(win1, scaledConfusionMatrix); //Show the image
                 CvInvoke.WaitKey(0);  //Wait for the key pressing event
                 CvInvoke.DestroyWindow(win1); //Destroy the window if key is pressed
+            }
+        }
+
+        private static void SoftNormalizeFeatureVectors(List<TaggedImage> images)
+        {
+            for (int dimension = 0; dimension < images[0].FeatureVector.Count; ++dimension)
+            {
+                float[] values = new float[images.Count];
+
+                for (int i = 0; i < images.Count; ++i)
+                {
+                    values[i] = images[i].FeatureVector[dimension];
+                }
+
+                float mean = values.Mean();
+                float stdDev = values.StdDeviation(mean);
+
+                foreach (TaggedImage image in images)
+                {
+                    image.FeatureVector[dimension] = (image.FeatureVector[dimension] - mean) * 0.5F / stdDev;
+                }
             }
         }
     }
