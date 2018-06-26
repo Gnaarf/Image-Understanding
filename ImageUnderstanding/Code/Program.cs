@@ -27,6 +27,7 @@ namespace ImageUnderstanding
 
             Console.WriteLine("Feature Generation: [" + config.featureGeneratorMethod + "]");
             Console.WriteLine("Classification:     [" + config.classifierMethod + "]\n");
+            Console.WriteLine("SoftNormalization:  [" + config.UseSoftNormalization + "]\n");
 
             // some parameters
             string path = config.path;
@@ -198,11 +199,14 @@ namespace ImageUnderstanding
             }
 
             float totalAccuracy = 0F;
+            List<float> accuracies = new List< float>();
             foreach (KeyValuePair<string, int> tagIndexPair in tagIndices)
             {
+                accuracies.Add(confusionMatrix.GetValue(tagIndexPair.Value, tagIndexPair.Value));
                 totalAccuracy += confusionMatrix.GetValue(tagIndexPair.Value, tagIndexPair.Value) / tagIndices.Count;
             }
             Console.WriteLine("total accuracy = " + string.Format("{0,12:#.0000}%", (totalAccuracy * 100)));
+            Console.WriteLine("stdDeviation over all total accuracies = " + accuracies.ToArray().StdDeviation());
 
 
             for (int x = 0; x < tagIndices.Count; ++x)
